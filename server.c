@@ -14,10 +14,66 @@ http://www.binarii.com/files/papers/c_sockets.txt
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-
+//extern from read_usb
+#include <sys/types.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <termios.h>
+#include <unistd.h>
+#include <string.h>
+//////
+//extern from read_usb
+/*
+ This code configures the file descriptor for use as a serial port.
+ */
+void configure(int fd) {
+    struct termios pts;
+    tcgetattr(fd, &pts);
+    cfsetospeed(&pts, 9600);
+    cfsetispeed(&pts, 9600);
+    
+    /*
+     // You may need to un-comment these lines, depending on your platform.
+     pts.c_cflag &= ~PARENB;
+     pts.c_cflag &= ~CSTOPB;
+     pts.c_cflag &= ~CSIZE;
+     pts.c_cflag |= CS8;
+     pts.c_cflag &= ~CRTSCTS;
+     pts.c_cflag |= CLOCAL | CREAD;
+     pts.c_iflag |= IGNPAR | IGNCR;
+     pts.c_iflag &= ~(IXON | IXOFF | IXANY);
+     pts.c_lflag |= ICANON;
+     pts.c_oflag &= ~OPOST;
+     */
+    
+    tcsetattr(fd, TCSANOW, &pts);
+//////
+}
 int start_server(int PORT_NUMBER)
 {
 
+    //////
+    //extern from read_usb
+    char* filename = "/dev/cu.usbmodem146201";
+    
+    // try to open the file for reading and writing
+    // you may need to change the flags depending on your platform
+    int fd2 = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+    
+    if (fd2 < 0) {
+        perror("Could not open file\n");
+        exit(1);
+    }
+    else {
+        printf("Successfully opened %s for reading and writing\n", filename);
+    }
+    
+    configure(fd2);
+//////
       // structs to represent the server and client
       struct sockaddr_in server_addr,client_addr;    
       
@@ -74,12 +130,39 @@ int start_server(int PORT_NUMBER)
 	printf("This is the incoming request:\n%s\n", request);
 
 	// this is the message that we'll send back
-	char *reply = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><p>Hello world!</p></html>";
+	char *reply = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n<html><p>Temperature</p></html>";
 
 	// 6. send: send the outgoing message (response) over the socket
 	// note that the second argument is a char*, and the third is the number of chars	
 	send(fd, reply, strlen(reply), 0);
-	
+	//////
+    //extern from read_usb
+          char msg[100];
+          char reply2[100];
+          int msgind = 0;
+          while(1){
+              char start, end;
+              char buf[100];
+              int bytes_read = read(fd2, buf, 100);
+              int i;
+              for(i = 0; i < bytes_read; i++){
+                  if(buf[i]=='\n'){
+                      msg[msgind] = buf[i];
+                      msg[msgind+1] = '\0';
+                      reply2[0] = '\0';
+                      strcat(reply2, "\n<html><p>");
+                      strcat(reply2,msg);
+                      strcat(reply2,"</p></html>");
+                      send(fd, reply2, strlen(reply2), 0);
+                      msgind = 0;
+                  }
+                  else{
+                      msg[msgind] = buf[i];
+                      msgind++;
+                  }
+              }
+          }
+    //////
 	// 7. close: close the connection
 	close(fd);
 	printf("Server closed connection\n");
