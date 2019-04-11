@@ -2,6 +2,7 @@
 var is_Fahrenheit = -1;
 var in_warning = -1;
 
+
  $(".UpdateButton").click(update);
 function update(){
 
@@ -82,12 +83,15 @@ $("#UpdateAll").click(updateall);
 
 function updateall(){
 	$.getJSON("http://localhost:3001/updateall", function(data,status){
+
 		var warning = $("#warning").val();
 		warning = Number(warning);
+
 		if (data.is_connect<0){
         		$("#Isconnect").html("Fail to connect to the middleware");
         }
         else{
+
         	if (warning < data.real){
         		$("#warningInfo").html("WARNING! The temprature is too high");
         		$.getJSON("http://localhost:3001/warning", function(data,status){
@@ -100,6 +104,7 @@ function updateall(){
 	});
         	}
         	else {$("#warningInfo").html("");}
+
         	if(is_Fahrenheit>0){
         		$('#aver_temperature').val(Fahrenheit(data.average));
 				$('#min_temperature').val(Fahrenheit(data.min));
@@ -215,11 +220,13 @@ function ToCelsius(){
 }
 
 function Fahrenheit(value1){
+
 	return Number(Number(value1)*1.8+32).toFixed(2);
 }
 
 function Celsius(value1){
 	return Number((Number(value1)-32)/1.8).toFixed(2);
+
 }
 function ChangeLight(){
 	$.getJSON("http://localhost:3001/light", function(data,status){
