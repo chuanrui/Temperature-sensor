@@ -65,6 +65,7 @@ double min = 200;
 double max = 0;
 double average = 0;
 int is_connect = 1;
+int afd=-1;
 
 void build_file(char* reply, char* filename){
     FILE* thefile = fopen(filename,"r");
@@ -175,7 +176,7 @@ int start_server(int PORT_NUMBER)
               build_file(reply, js);
               send(fd, reply, strlen(reply), 0);
           }
-          else if(strcmp(token, "/jquery.canvasjs.min.js")==0){
+          /*else if(strcmp(token, "/jquery.canvasjs.min.js")==0){
               char* reply = malloc(500000*sizeof(char));
               reply[0] = '\0';
               strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/javascript\n\n");
@@ -183,7 +184,7 @@ int start_server(int PORT_NUMBER)
               build_file(reply, graph);
               send(fd, reply, strlen(reply), 0);
               free(reply);
-          }
+          }*/
           else if(strcmp(token, "/real")==0){
               char reply[100];
               reply[0] = '\0';
@@ -255,6 +256,39 @@ int start_server(int PORT_NUMBER)
               send(fd, reply, strlen(reply), 0);
               free(reply);
           }
+          else if(strcmp(token, "/light")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"light",5);
+          }
+          else if(strcmp(token, "/c")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"c",1);
+          }
+          else if(strcmp(token, "/f")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"f",1);
+          }
           free(copy_request);
             /*pthread_mutex_lock(&lock);
             send(fd, reply2, strlen(reply2), 0);
@@ -279,16 +313,16 @@ void* update(void* r){
     
     // try to open the file for reading and writing
     // you may need to change the flags depending on your platform
-    int fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-    printf("arduino fd is %d\n", fd);
-    if (fd < 0) {
+    afd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+    printf("arduino fd is %d\n", afd);
+    if (afd < 0) {
         perror("Could not open file\n");
         exit(1);
     }
     else {
         printf("Successfully opened %s for reading and writing\n", filename);
     }
-    configure(fd);
+    configure(afd);
     
     int msgind = 0;
     int times = 0;
@@ -300,20 +334,20 @@ void* update(void* r){
         close(fd2);
         if(fd2<0){
             close(fd2);
-            close(fd);
-            fd = -1;
+            close(afd);
+            afd = -1;
             is_connect = -1;
             continue;
         }
         else{
-            if(fd>0);
+            if(afd>0);
             else{
-                fd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
-                configure(fd);
+                afd = open(filename, O_RDWR | O_NOCTTY | O_NDELAY);
+                configure(afd);
                 is_connect = 1;
             }
         }
-        int bytes_read = read(fd, buf, 100);
+        int bytes_read = read(afd, buf, 100);
         int i;
         for(i = 0; i < bytes_read; i++){
             if(buf[i]=='\n'){

@@ -159,7 +159,7 @@ $("#DrawGraph").click(Draw_graph2);
 
 $("#Fahrenheit").click(ToFahrenheit);
 $("#Celsius").click(ToCelsius);
-
+$("#Light").click(ChangeLight);
 function ToFahrenheit(){
 	if(is_Fahrenheit==-1){
 		is_Fahrenheit=1;
@@ -168,17 +168,33 @@ function ToFahrenheit(){
 		value1 = $('#max_temperature').val(); 		   $('#max_temperature').val(Fahrenheit(value1));
 		value1 = $('#realtime_temperature').val();     $('#realtime_temperature').val(Fahrenheit(value1));
 		//if ($("#realtime_temperature").val() != "") $("#realtime_temperature").val(Temp.real);
+		$.getJSON("http://localhost:3001/f", function(data,status){
+       	if (data.is_connect<0){
+       		$("#Isconnect").html("Fail to connect to the middleware");
+       	}
+       	else{
+        	$("#Isconnect").html("Succeed to connect to the middleware");
+       	}
+	});
 	}
 }
 
 function ToCelsius(){
 	if(is_Fahrenheit==1){
 		is_Fahrenheit=-1;
-		var value1 = $('#aver_temperature').val();  $('#aver_temperature').val(Celsius(value));
-		 value1 = $('#min_temperature').val();   $('#min_temperature').val(Celsius(value));
-		 value1 = $('#max_temperature').val();   $('#max_temperature').val(Celsius(value));
-		 value1 = $('#realtime_temperature').val();    $('#realtime_temperature').val(Celsius(value));
+		var value1 = $('#aver_temperature').val();  $('#aver_temperature').val(Celsius(value1));
+		 value1 = $('#min_temperature').val();   $('#min_temperature').val(Celsius(value1));
+		 value1 = $('#max_temperature').val();   $('#max_temperature').val(Celsius(value1));
+		 value1 = $('#realtime_temperature').val();    $('#realtime_temperature').val(Celsius(value1));
 		//if ($("#realtime_temperature").val() != "") $("#realtime_temperature").val(Temp.real);
+		$.getJSON("http://localhost:3001/c", function(data,status){
+       	if (data.is_connect<0){
+       		$("#Isconnect").html("Fail to connect to the middleware");
+       	}
+       	else{
+        	$("#Isconnect").html("Succeed to connect to the middleware");
+       	}
+	});
 	}
 }
 
@@ -188,4 +204,14 @@ function Fahrenheit(value1){
 
 function Celsius(value1){
 	return (Number(value1)-32)/1.8;
+}
+function ChangeLight(){
+	$.getJSON("http://localhost:3001/light", function(data,status){
+       	if (data.is_connect<0){
+       		$("#Isconnect").html("Fail to connect to the middleware");
+       	}
+       	else{
+        	$("#Isconnect").html("Succeed to connect to the middleware");
+       	}
+	});
 }
