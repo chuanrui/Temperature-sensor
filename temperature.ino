@@ -37,7 +37,7 @@ const byte NumberLookup[16] =   {0x3F,0x06,0x5B,0x4F,0x66,
 
 /* Function prototypes */
 void Cal_temp (int&, byte&, byte&, bool&);
-void Dis_7SEG (int, byte, byte, bool);
+void Dis_7SEG (int, byte, byte, bool, bool);
 void Send7SEG (byte, byte);
 void SerialMonitorPrint (byte, int, bool);
 void UpdateRGB (byte);
@@ -69,8 +69,12 @@ void setup()
 void loop() 
 { 
   int Decimal;
+  int FDecimal = 0;
   byte Temperature_H, Temperature_L, counter, counter2;
+  byte FTemperature_H = 0, FTemperature_L = 0;
   bool IsPositive;
+  bool isCel = 1, tmp = 1;
+  bool FisP = 0;
   
   /* Configure 7-Segment to 12mA segment output current, Dynamic mode, 
      and Digits 1, 2, 3 AND 4 are NOT blanked */
@@ -123,14 +127,85 @@ void loop()
     /* Display temperature on the serial monitor. 
        Comment out this line if you don't use serial monitor.*/
     SerialMonitorPrint (Temperature_H, Decimal, IsPositive);
-    
+
     /* Update RGB LED.*/
     UpdateRGB (Temperature_H);
     
-    /* Display temperature on the 7-Segment */
-    Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive);
+    if (isCel == 0) {
+      Cal_F(FDecimal, FTemperature_H, FisP, Decimal, Temperature_H, IsPositive);
+      Dis_7SEG (FDecimal, FTemperature_H, FTemperature_L, FisP, 0);
+    } else if (isCel == 1) {
+      Dis_7SEG (Decimal, Temperature_H, Temperature_L, IsPositive, 1);
+    } else if (isCel == 2) {
+
+        Send7SEG(4,0x40);
+        Send7SEG(3,0x40); 
+      Send7SEG(2,0x40); 
+      Send7SEG(1,0x40);
+      
+    }
     
     delay (1000);        /* Take temperature read every 1 second */
+    if (Serial.available() > 0){
+      String msg = Serial.readString();
+      Serial.print(msg);
+      
+      if (msg.equals("c")) {
+        isCel = 1;
+      } else if (msg == "f") {
+        isCel = 0;
+      } else if (msg == "light") {
+        digitalWrite(RED, HIGH);
+        digitalWrite(BLUE, LOW);
+        digitalWrite(GREEN, LOW);
+        delay(1000);
+        digitalWrite(RED, LOW);
+        digitalWrite(BLUE, HIGH);
+        digitalWrite(GREEN, LOW);
+        delay(1000);
+        digitalWrite(RED, LOW);
+        digitalWrite(BLUE, LOW);
+        digitalWrite(GREEN, HIGH); 
+        delay(1000);       
+      } else if (msg == "warning") {
+        while (1) {
+          digitalWrite(RED, HIGH);
+          digitalWrite(BLUE, LOW);
+          digitalWrite(GREEN, LOW);
+          delay(500);
+          digitalWrite(RED, LOW);
+          digitalWrite(BLUE, LOW);
+          digitalWrite(GREEN, LOW);
+          String msg1 = Serial.readString();
+          if (msg1 == "normal") {
+            break;
+          }
+        }
+      } else if (msg == "s") {
+               Send7SEG(4,0x40);
+        Send7SEG(3,0x40); 
+      Send7SEG(2,0x40); 
+      Send7SEG(1,0x40);
+        tmp = isCel;
+        isCel = 2;
+      } else if (msg == "resume"){
+        isCel = tmp;
+      }
+      else if (msg == "red") {
+        digitalWrite(RED, HIGH);
+        digitalWrite(BLUE, LOW);
+        digitalWrite(GREEN, LOW);
+      } else if (msg == "blue") {
+        digitalWrite(RED, LOW);
+        digitalWrite(BLUE, HIGH);
+        digitalWrite(GREEN, LOW);
+      } else if (msg == "green") {
+        digitalWrite(RED, LOW);
+        digitalWrite(BLUE, LOW);
+        digitalWrite(GREEN, HIGH);
+      }
+    }
+    
   }
 } 
 
@@ -166,11 +241,11 @@ void Cal_temp (int& Decimal, byte& High, byte& Low, bool& sign)
  Purpose: 
    Display number on the 7-segment display.
 ****************************************************************************/
-void Dis_7SEG (int Decimal, byte High, byte Low, bool sign)
+void Dis_7SEG (int Decimal, byte High, byte Low, bool sign, bool isCel)
 {
   byte Digit = 4;                 /* Number of 7-Segment digit */
   byte Number;                    /* Temporary variable hold the number to display */
-  
+
   if (sign == 0)                  /* When the temperature is negative */
   {
     Send7SEG(Digit,0x40);         /* Display "-" sign */
@@ -282,6 +357,22 @@ void SerialMonitorPrint (byte Temperature_H, int Decimal, bool IsPositive)
     Serial.print(" degrees C");
     Serial.print("\n\n");
 }
-    
 
 
+
+void Cal_F (int& FDecimal, byte& FHigh, bool& Fsign, int CDecimal, byte CHigh, bool Csign)
+{
+  double Celsius, Fahrenheit;
+  Celsius = CHigh + CDecimal / 1000;
+  if (Csign == 0) {
+    Celsius = - Celsius;
+  }  
+  Fahrenheit = Celsius * 1.8 + 32.0;
+  if (Fahrenheit < 0) {  /* Check for negative temperature in Fahrenheit. */
+    Fsign = 0;
+  } else {
+    Fsign = 1;
+  }
+  FHigh = (int) Fahrenheit;
+  FDecimal = (int) ((Fahrenheit - FHigh) * 1000);
+}

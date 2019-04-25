@@ -1,92 +1,68 @@
 //Need to update this to draw a new graph
 var is_Fahrenheit = -1;
 var in_warning = -1;
+var standby = -1 ;
 
 
- $(".UpdateButton").click(update);
-function update(){
 
-	var Kind = $(this).attr('id');
-	if (Kind == "update real-time"){
-        $.getJSON("http://localhost:3001/real", function(data,status){
-        	if (data.is_connect<0){
-        		$("#Isconnect").html("Fail to connect to the middleware");
-        	}
-        	else{
-				var INPUT = $('#realtime_temperature');
-				if(is_Fahrenheit>0){
-					INPUT.val(Fahrenheit(data.real));
-				}
-				else{
-					INPUT.val(data.real);
-				}
-	        	
-	        	$("#Isconnect").html("Succeed to connect to the middleware");
-        	}
-		});
-	}
-	else if (Kind == "update max"){
-        $.getJSON("http://localhost:3001/max", function(data,status){
-        	if (data.is_connect<0){
-        		$("#Isconnect").html("Fail to connect to the middleware");
-        	}
-        	else{
-				var INPUT = $('#max_temperature');
-	        	if(is_Fahrenheit>0){
-					INPUT.val(Fahrenheit(data.max));
-				}
-				else{
-					INPUT.val(data.max);
-				}
-	        	$("#Isconnect").html("Succeed to connect to the middleware");
-        	}
-		});
-		
-	}
-	else if(Kind == "update min") {
-        $.getJSON("http://localhost:3001/min", function(data,status){
-        	if (data.is_connect<0){
-        		$("#Isconnect").html("Fail to connect to the middleware");
-        	}
-        	else{
-				var INPUT = $('#min_temperature');
-	        	if(is_Fahrenheit>0){
-					INPUT.val(Fahrenheit(data.min));
-				}
-				else{
-					INPUT.val(data.min);
-				}
-	        	$("#Isconnect").html("Succeed to connect to the middleware");
-        	}
-		});
-	}
-	else {
-		$.getJSON("http://localhost:3001/average", function(data,status){
-			if (data.is_connect<0){
-        		$("#Isconnect").html("Fail to connect to the middleware");
-        	}
-        	else{
-				var INPUT = $('#aver_temperature');
-				if(is_Fahrenheit>0){
-					INPUT.val(Fahrenheit(data.average));
-				}
-				else{
-					INPUT.val(data.average);
-				}
-				$("#Isconnect").html("Succeed to connect to the middleware");
-			}
-		});
+setInterval(try_updateall,3000);
+
+function try_updateall(){
+	if (standby<0){
+		updateall();
+		Draw_graph2();
 	}
 }
 
+$("#stand_by").click(function (){
+	if(standby == -1){
+		
+	    standby = 1; console.log("Now the program is in stand by mode");
+	    
+	    $.getJSON("http://localhost:3001/stand", function(data,status){
+		   	if (data.is_connect<0){
+		   		$("#Isconnect").html("Fail to connect to the middleware");
+		   	}
+		   	else{
+		    	//$("#Isconnect").html("Succeed to connect to the middleware");
+		    	$("#Isconnect").html("Now the program is in stand by mode");
+		   	}
+		});
+		$('#realtime_temperature').val("----");
+     //clearInterval(updateall);
+ 	}
+})
+
+$("#resume").click(function (){
+	if (standby == 1){
+	standby = -1;
+	$.getJSON("http://localhost:3001/resume", function(data,status){
+		   	if (data.is_connect<0){
+		   		$("#Isconnect").html("Fail to connect to the middleware");
+		   	}
+		   	else{
+		    	$("#Isconnect").html("Succeed to connect to the middleware");
+		   	}
+		});
+	//setInterval(updateall,3000);
+	}
+})
+
+
 $("#UpdateAll").click(updateall);
+
+
+//setInterval(Draw_graph2,3000);
 
 function updateall(){
 	$.getJSON("http://localhost:3001/updateall", function(data,status){
-
 		var warning = $("#warning").val();
-		warning = Number(warning);
-
+		if(warning == ""){
+			warning = Number.MAX_SAFE_INTEGER;
+		}
+		else{
+			warning = Number(warning);
+		}
 		if (data.is_connect<0){
         		$("#Isconnect").html("Fail to connect to the middleware");
         }
@@ -95,16 +71,25 @@ function updateall(){
         	if (warning < data.real){
         		$("#warningInfo").html("WARNING! The temprature is too high");
         		$.getJSON("http://localhost:3001/warning", function(data,status){
-       	if (data.is_connect<0){
-       		$("#Isconnect").html("Fail to connect to the middleware");
-       	}
-       	else{
-        	$("#Isconnect").html("Succeed to connect to the middleware");
-       	}
-	});
+			       	if (data.is_connect<0){
+			       		$("#Isconnect").html("Fail to connect to the middleware");
+			       	}
+			       	else{
+			        	$("#Isconnect").html("Succeed to connect to the middleware");
+			       	}
+				});
         	}
-        	else {$("#warningInfo").html("");}
-
+        	else {
+        		$("#warningInfo").html("");
+    //     		    $.getJSON("http://localhost:3001/normal", function(data,status){
+				//        	if (data.is_connect<0){
+				//        		$("#Isconnect").html("Fail to connect to the middleware");
+				//        	}
+				//        	else{
+				//         	$("#Isconnect").html("Succeed to connect to the middleware");
+				//        	}
+				// });
+        	}
         	if(is_Fahrenheit>0){
         		$('#aver_temperature').val(Fahrenheit(data.average));
 				$('#min_temperature').val(Fahrenheit(data.min));
@@ -124,6 +109,7 @@ function updateall(){
 			
 	    }
 	});
+	
 }
 
 function Draw_graph2(){
@@ -220,13 +206,11 @@ function ToCelsius(){
 }
 
 function Fahrenheit(value1){
-
 	return Number(Number(value1)*1.8+32).toFixed(2);
 }
 
 function Celsius(value1){
 	return Number((Number(value1)-32)/1.8).toFixed(2);
-
 }
 function ChangeLight(){
 	$.getJSON("http://localhost:3001/light", function(data,status){

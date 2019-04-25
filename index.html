@@ -21,50 +21,45 @@ text-align: left;
 </head>
 
 <body>
-<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js">></script>
+<script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 
 
 <table>
 <tr>
   <td>Real-time temperature is :</td>
   <td><input id = "realtime_temperature" name = "realtime_temperature" disabled></input></td>
-
 </tr>
 
 <tr>
   <td>Max temperature  in an hour is :</td>
   <td><input id="max_temperature" name="max_temperature" disabled></input></td>
-
 </tr>
 
 <tr>
   <td>Min temperature in an hour is :</td>
   <td><input id="min_temperature" name="min_temperature" disabled></input></td>
-
 </tr>
 
 <tr>
   <td>Average temperature in an hour is :</td>
   <td><input id="aver_temperature" name="aver_temperature" disabled></input></td>
-
 </tr>
 </table>
 
 <div>The warning threshold is <input id = "warning"></input></div>
 <div><p id = "Isconnect" style="font-size: 30px"></p>
-<p id = "warningInfo" style = "font-size : 30px, color : red"></p></div>
-
+<p id = "warningInfo" style = "font-size : 30px; color : red;"></p></div>
 
 <div><table>
 	<tr>
-		<td><button id= "stand_by" name="stand_by" style="height: 30pt">stand by mode</button></td>
-		<td><button id= "Light" name="Light" style="height: 30pt">Change Light</button></td>
+		<td><button id= "stand_by" name="stand_by" style="height: 30pt">Stand_by mode</button></td>
+		<td><button id= "resume" name="resume" style="height: 30pt">Resume to read data</button></td>
 		<td><button id= "DrawGraph" name="DrawGraph" style="height: 30pt">Draw Graph</button></td>
 	</tr>
 	<tr>
 		<td><button id= "Fahrenheit" name="Fahrenheit" style="height: 30pt">To Fahrenheit</button></td>
     <td><button id= "Celsius" name="Celsius" style="height: 30pt">To Celsius</button></td>
-    <td><button id= "UpdateAll" name="UpdateAll" style="height: 30pt">UpdateAll</button></td>
+    <td><button id= "Light" name="Light" style="height: 30pt">Change Light</button></td>
 	</tr>
 </table>
 </div>

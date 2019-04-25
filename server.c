@@ -116,8 +116,8 @@ int start_server(int PORT_NUMBER)
 
       // 3. listen: indicates that we want to listen to the port to which we bound; second arg is number of allowed connections
       if (listen(sock, 1) == -1) {
-	perror("Listen");
-	exit(1);
+          perror("Listen");
+          exit(1);
       }
     
       // once you get here, the server is set up and about to start listening
@@ -185,47 +185,6 @@ int start_server(int PORT_NUMBER)
               send(fd, reply, strlen(reply), 0);
               free(reply);
           }*/
-          else if(strcmp(token, "/real")==0){
-              char reply[100];
-              reply[0] = '\0';
-              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
-              char* string = malloc(100*sizeof(char));
-              sprintf(string,"{\"real\":%f,\"is_connect\":%d}", data[rear], is_connect);
-              strcat(reply, string);
-              free(string);
-              printf("msg is %s\n", reply);
-              send(fd, reply, strlen(reply), 0);
-          }
-          else if(strcmp(token, "/min")==0){
-              char reply[100];
-              reply[0] = '\0';
-              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
-              char* string = malloc(100*sizeof(char));
-              sprintf(string,"{\"min\":%f,\"is_connect\":%d}", min, is_connect);
-              strcat(reply, string);
-              free(string);
-              send(fd, reply, strlen(reply), 0);
-          }
-          else if(strcmp(token, "/max")==0){
-              char reply[100];
-              reply[0] = '\0';
-              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
-              char* string = malloc(100*sizeof(char));
-              sprintf(string,"{\"max\":%f,\"is_connect\":%d}", max, is_connect);
-              strcat(reply, string);
-              free(string);
-              send(fd, reply, strlen(reply), 0);
-          }
-          else if(strcmp(token, "/average")==0){
-              char reply[100];
-              reply[0] = '\0';
-              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
-              char* string = malloc(100*sizeof(char));
-              sprintf(string,"{\"average\":%f,\"is_connect\":%d}", average, is_connect);
-              strcat(reply, string);
-              free(string);
-              send(fd, reply, strlen(reply), 0);
-          }
           else if(strcmp(token, "/updateall")==0){
               char reply[200];
               reply[0] = '\0';
@@ -288,6 +247,50 @@ int start_server(int PORT_NUMBER)
               free(string);
               send(fd, reply, strlen(reply), 0);
               write(afd,"f",1);
+          }
+          else if(strcmp(token, "/warning")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"warning",7);
+          }
+          else if(strcmp(token, "/normal")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"normal",6);
+          }
+          else if(strcmp(token, "/stand")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"s",1);
+          }
+          else if(strcmp(token, "/resume")==0){
+              char reply[100];
+              reply[0] = '\0';
+              strcat(reply, "HTTP/1.1 200 OK\nContent-Type: application/json\n\n");
+              char* string = malloc(100*sizeof(char));
+              sprintf(string,"{\"is_connect\":%d}", is_connect);
+              strcat(reply, string);
+              free(string);
+              send(fd, reply, strlen(reply), 0);
+              write(afd,"resume",6);
           }
           free(copy_request);
             /*pthread_mutex_lock(&lock);
